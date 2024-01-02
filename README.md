@@ -3,7 +3,7 @@
 - Calculate Moon Phase
 - Create Statistic about Moon Phase
 ## Install
-###Clone the repository
+### Clone the repository
 ```bash
 git clone https://github.com/Pawelgit1234/moon_phase.git
 ```
