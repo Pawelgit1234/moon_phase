@@ -1,6 +1,10 @@
 import tkinter as tk
+from tkinter import messagebox
 from moon_calculator import *
 from coordinates import *
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import pandas as pd
 
 
 class App(tk.Tk):
@@ -58,6 +62,8 @@ class App(tk.Tk):
 		self.to_time_label.pack()
 		self.to_time_entry.pack()
 
+		self.statistic_btn.pack()
+
 	def set_moon_phase(self):
 		try:
 			latitude = float(self.latitude_entry.get())
@@ -68,15 +74,33 @@ class App(tk.Tk):
 			moon_phase_percent = calculate_moon_phase(latitude, longitude, time)
 			emoji_text = get_current_moon_emoji(moon_phase_percent)
 
+			self.city_name.config(text=get_city_name(latitude, longitude))
 			self.moon_emoji.config(text=emoji_text)
 			self.phase_percent.config(text=str(round(moon_phase_percent, 2)) + '%')
 			self.latitude_and_longitude.config(text=f"Latitude: {latitude} | Longitude: {longitude}")
 			self.time.config(text=time_str)
-			self.city_name.config(text=get_city_name(latitude, longitude))
 		except ValueError as e:
-			self.phase_percent.config(text=str(e))
+			messagebox.showerror("Error", str(e))
+		except AttributeError as a:
+			messagebox.showerror("Error", "City with that coordinates do not exists!")
 
 	def show_statistic(self):
-		from_time = self.time_entry.get()
-		to_time = self.to_time_entry.get()
+		try:
+			from_time = datetime.datetime.strptime(self.time_entry.get(), "%d-%m-%Y %H:%M:%S")
+			to_time = datetime.datetime.strptime(self.to_time_entry.get(), "%d-%m-%Y %H:%M:%S")
+			latitude = float(self.latitude_entry.get())
+			longitude = float(self.longitude_entry.get())
 
+			date_range = pd.date_range(from_time, to_time, freq='D')
+			moon_phases = [calculate_moon_phase(latitude, longitude, date) for date in date_range]
+
+			plt.figure(figsize=(10, 6))
+			plt.plot_date(date_range, moon_phases, '-')
+
+			plt.title('Moon Phase Statistic')
+			plt.xlabel('Date')
+			plt.ylabel('Moon Phase Percentage')
+
+			plt.show()
+		except ValueError as e:
+			messagebox.showerror("Error", str(e))
